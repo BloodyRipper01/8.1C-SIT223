@@ -1,62 +1,44 @@
 pipeline {
     agent any
 
+    environment {
+        DIRECTORY_PATH = "C:/Code/Proffessional Practice/6.1P"
+        TESTING_ENVIRONMENT = "sandbox"
+        PRODUCTION_ENVIRONMENT = "M.Sharkie"
+    }
+
     stages {
-        stage('Checkout') {
+        stage('Build') {
             steps {
-                git branch: 'main', url: 'https://github.com/BloodyRipper01/8.2CDevSecOps.git'
+                echo "Fetch the source code from ${env.DIRECTORY_PATH}"
+                echo "Compile the code and generate any necessary artefacts"
             }
         }
-        stage('Install Dependencies') {
+        stage('Test') {
             steps {
-                bat 'npm install'
+                echo "Preparing ${env.TESTING_ENVIRONMENT} for tests"
+                echo "Unit tests"
+                echo "Integration tests"
             }
         }
-        stage('Run Tests') {
+        stage('Code Quality Check') {
             steps {
-                bat 'npm test || exit 0' // Continue even if tests fail
-            }
-            post {
-                failure {
-                    emailext(
-                        subject: "Testing FAILURE",
-                        body: "Well that sucks, testing failed",
-                        to: "mitchellsharkie01@gmail.com"
-                    )
-                }
-                success {
-                    emailext(
-                        subject: "Testing SUCCESS",
-                        body: "Testing was a great success - Borat Voice",
-                        to: "mitchellsharkie01@gmail.com"
-                    )
-                }
+                echo "Static analysis tools running..."
             }
         }
-        stage('Generate Coverage Report') {
+        stage('Deploy') {
             steps {
-                bat 'npm run coverage || exit 0'
+                echo "Deploy the application to a testing environment: ${env.TESTING_ENVIRONMENT}"
             }
         }
-        stage('NPM Audit (Security Scan)') {
+        stage('Approval') {
             steps {
-                bat 'npm audit || exit 0'
+                sleep time: 10, unit: 'SECONDS'
             }
-            post {
-                failure {
-                    emailext(
-                        subject: "Security Scans FAILURE",
-                        body: "We got a security issue, sir",
-                        to: "mitchellsharkie01@gmail.com"
-                    )
-                }
-                success {
-                    emailext(
-                        subject: "Security Scans SUCCESS",
-                        body: "All locked up",
-                        to: "mitchellsharkie01@gmail.com"
-                    )
-                }
+        }
+        stage('Deploy to Product') {
+            steps {
+                echo "Deploying code to ${env.PRODUCTION_ENVIRONMENT}"
             }
         }
     }
